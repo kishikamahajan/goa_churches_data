@@ -8,7 +8,7 @@ library(ggmap)
 churches <- readr::read_csv("/Users/kishikamahajan/Desktop/church_data_updated.csv")
 
 # Registering Google API
-register_google(key = "AIzaSyBQghUALnu-A3uTGw7kgosnNQWuVZOym6U")
+register_google(key = "---")
 
 # Getting the lats and longs for addresses
 churches_with_addresses <- churches %>%
