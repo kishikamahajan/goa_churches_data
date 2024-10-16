@@ -5,6 +5,9 @@ import time
 import pandas as pd
 
 def get_church_links(main_url):
+    """
+    This function gets the links of all the links (for each church) on the main website. 
+    """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'
     }
@@ -12,6 +15,7 @@ def get_church_links(main_url):
     response = requests.get(main_url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
+    # Getting the specifications of the webpage
     list_items = soup.find_all('li', class_='cat-item')
 
     # Extract links from the <li> items
@@ -20,26 +24,29 @@ def get_church_links(main_url):
         anchor = li.find('a', href=True)
         if anchor:
             href = anchor['href']
-            # Make sure to create a full URL if the link is relative
+            # Creating a full URL 
             full_url = requests.compat.urljoin(main_url, href)
             church_links.append(full_url)
 
     return list(set(church_links))  # Return unique links
 
 # Main website URL
-main_website_url = "https://goanchurches.info/"  # Use the correct main URL
+main_website_url = "https://goanchurches.info/"  
 
 # Get church links from the main website
 church_links = get_church_links(main_website_url)
 
-# Optional: Sleep for a while before printing to avoid overwhelming the server
+# Sleep for a while before printing to avoid overwhelming the server
 time.sleep(3)
 
 # Print the collected church links
 print(church_links)
 
 def extract_church_info(url):
-    print("entered the function")
+    """
+    This function extracts the information needed for each church.
+    """
+    print("entered the function") # For checking purposes only
     # Make a GET request to the website
 
     headers = {
@@ -83,17 +90,19 @@ def extract_church_info(url):
 
                 print("Combined Paragraphs Text:", all_paragraphs_text)
 
-                # Extract the foundation year
+                # Extract the foundation year using terms like founded, built and established
                 year_match = re.search(r'(?:founded|built|established).*?in.*?(\d{4})', all_paragraphs_text, re.IGNORECASE)
                 year = year_match.group(1) if year_match else "Not found"
                 print(year)
 
-                # Extract the religious order
+                # Extract the religious order if it is exactly Jesuit or Franciscan
                 order_match = re.search(r'(Jesuit|Franciscan)', all_paragraphs_text, re.IGNORECASE)
 
+                # Extracting orders other than the above two
                 if order_match:
                     order = order_match.group(1).strip()
                 else:
+                    # Ensuring St. is not considered the end of the sentence
                     order_pattern = r'([^.!?]*?\border[s]?\b(?:(?!\.(?:\s|$)|St\.).)*(?:St\.(?:(?!\.(?:\s|$)).)*)?[.!?])'
                     order_sentence_match = re.search(order_pattern, all_paragraphs_text, re.IGNORECASE | re.DOTALL)
                     if order_sentence_match:
@@ -112,7 +121,7 @@ def extract_church_info(url):
                 else:
                     print("Address not found.")
 
-                # Creating a dictionary
+                # Creating a dictionary to store the information
                 church_info = {
                     "church_name": church_name,
                     "built_date": year,
@@ -129,8 +138,6 @@ def extract_church_info(url):
     return None
 
 if __name__ == "__main__":
-    # Main website URL
-    main_website_url = "https://goanchurches.info/"  # Use the correct main URL
 
     # Get church links from the main website
     church_links = get_church_links(main_website_url)
@@ -143,7 +150,7 @@ if __name__ == "__main__":
         church_data = extract_church_info(url)
         if church_data:
             all_church_data.append(church_data)
-        time.sleep(3)  # Optional: Delay to avoid overwhelming the server
+        time.sleep(3)  
 
     # Convert the list of dictionaries into a pandas DataFrame
     df = pd.DataFrame(all_church_data)
